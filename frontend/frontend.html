@@ -1,0 +1,1563 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Book Generator Pro - With Images</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .new-feature-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 10px 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .status-banner {
+            background: #e6fffa;
+            border: 2px solid #81e6d9;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status-banner.error {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #c53030;
+        }
+
+        .status-banner.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-section h2 {
+            margin-bottom: 25px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-group small {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-container:hover {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-weight: 600;
+            color: #2d3748;
+            cursor: pointer;
+        }
+
+        .image-options {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .image-options.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+
+        .btn-test {
+            background: linear-gradient(45deg, #ed8936, #dd6b20);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+
+        .progress-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-messages {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-message {
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            background: white;
+        }
+
+        .status-message.error {
+            border-left-color: #e53e3e;
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-message.success {
+            border-left-color: #38a169;
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .chapter-preview {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            color: #2d3748;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .chapter-content {
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 1rem;
+            white-space: pre-line;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .word-badge {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .cover-image-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .cover-image {
+            max-width: 300px;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+            display: block;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .content-image {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .content-image .caption {
+            padding: 15px;
+            color: #4a5568;
+            font-size: 0.9rem;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .content-image .source-badge {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .feature h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .book-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row,
+            .three-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+
+            .chapter-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ai-badge, .word-badge {
+                margin: 10px 0 0 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Book Generator Pro</h1>
+            <p>Create professional ebooks with AI-generated images using OpenAI GPT-4, DALL-E & Gemini Pro</p>
+            <div>
+                <span class="new-feature-badge">🆕 NEW: Cover Image Generation</span>
+                <span class="new-feature-badge">🖼️ NEW: Content Images</span>
+                <span class="new-feature-badge">📸 NEW: Unsplash Integration</span>
+            </div>
+        </div>
+
+        <div id="connectionStatus" class="status-banner error" style="display: none;">
+            <div>
+                <strong>Backend Status:</strong> <span id="statusText">Disconnected</span>
+            </div>
+            <button class="btn-test" onclick="testConnection()">Test Connection</button>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <h3>Real AI Integration</h3>
+                <p>Uses actual OpenAI GPT-4, DALL-E 3, and Google Gemini Pro APIs for unique, high-quality content and images</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🖼️</div>
+                <h3>AI Image Generation</h3>
+                <p>Generate custom cover images and content illustrations using DALL-E 3 or copyright-free Unsplash photos</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📚</div>
+                <h3>Commercial Quality</h3>
+                <p>Generates 40-100+ page professional books with images ready for selling on marketplaces</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💰</div>
+                <h3>Cost Effective</h3>
+                <p>Only $0.05-0.50 per book generated (including images) - extremely profitable for ebook business</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>🛠️ Backend Configuration</h2>
+            
+            <div class="form-group">
+                <label for="backendUrl">Backend API URL</label>
+                <input type="text" id="backendUrl" placeholder="http://localhost:8000" value="http://localhost:8000">
+                <small>Enter your FastAPI backend server URL</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="aiProvider">AI Provider</label>
+                    <select id="aiProvider">
+                        <option value="openai">OpenAI GPT-4 + DALL-E (Higher Quality)</option>
+                        <option value="gemini">Google Gemini Pro (Lower Cost)</option>
+                        <option value="both">Both (Fallback System)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Connection Test</label>
+                    <button type="button" class="btn-test" onclick="testConnection()" style="width: 100%;">
+                        🔗 Test Backend Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>📚 Book Configuration</h2>
+            
+            <div class="form-group">
+                <label for="bookTitle">Book Title *</label>
+                <input type="text" id="bookTitle" placeholder="e.g., 'The Complete Guide to Digital Marketing for Beginners'" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bookDescription">Detailed Book Description *</label>
+                <textarea id="bookDescription" placeholder="Provide a comprehensive description including:
+- Target audience (beginners, professionals, etc.)
+- Key topics and chapters to cover
+- Desired tone and writing style
+- Specific aspects to focus on
+- Learning outcomes or goals
+- Any unique angles or perspectives
+
+Example: 'A comprehensive guide for small business owners who want to learn digital marketing. Cover social media marketing, email campaigns, SEO basics, content creation, and paid advertising. Write in a friendly, practical tone with real examples and actionable steps. Focus on budget-friendly strategies and tools.'" required></textarea>
+                <small>The more detailed your description, the better and more targeted your book will be!</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="authorName">Author Name</label>
+                    <input type="text" id="authorName" placeholder="Your name or pen name">
+                </div>
+                <div class="form-group">
+                    <label for="bookCategory">Category</label>
+                    <select id="bookCategory">
+                        <option value="business">Business & Entrepreneurship</option>
+                        <option value="selfhelp">Self-Help & Personal Development</option>
+                        <option value="technology">Technology & Programming</option>
+                        <option value="health">Health & Wellness</option>
+                        <option value="finance">Finance & Investing</option>
+                        <option value="marketing">Marketing & Sales</option>
+                        <option value="lifestyle">Lifestyle & Hobbies</option>
+                        <option value="education">Education & Learning</option>
+                        <option value="howto">How-To & DIY</option>
+                        <option value="psychology">Psychology & Mindset</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="chapterCount">Number of Chapters</label>
+                    <select id="chapterCount">
+                        <option value="8">8 Chapters (~40-50 pages)</option>
+                        <option value="10">10 Chapters (~50-60 pages)</option>
+                        <option value="12">12 Chapters (~60-75 pages)</option>
+                        <option value="15">15 Chapters (~75-90 pages)</option>
+                        <option value="20">20 Chapters (~100+ pages)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="writingStyle">Writing Style</label>
+                    <select id="writingStyle">
+                        <option value="professional">Professional & Informative</option>
+                        <option value="conversational">Conversational & Friendly</option>
+                        <option value="academic">Academic & Detailed</option>
+                        <option value="practical">Practical & Action-Oriented</option>
+                        <option value="storytelling">Storytelling & Narrative</option>
+                        <option value="beginner">Beginner-Friendly & Simple</option>
+                        <option value="expert">Expert-Level & Technical</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="additionalInstructions">Additional Instructions (Optional)</label>
+                <textarea id="additionalInstructions" placeholder="Any specific requirements:
+- Examples to include or avoid
+- Specific formatting needs
+- Industry focus
+- Geographic considerations
+- Special methodologies
+- Citation requirements
+- etc."></textarea>
+                <small>Provide any special requirements or focus areas for your book</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>🎨 Image Generation Options</h2>
+            
+            <div class="checkbox-container" onclick="toggleCoverImage()">
+                <input type="checkbox" id="generateCover" checked>
+                <div>
+                    <div class="checkbox-label">Generate Cover Image</div>
+                    <small>Create a professional book cover using AI or stock photos</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="coverStyle">Cover Style</label>
+                <select id="coverStyle">
+                    <option value="professional">Professional - Clean, business-like design</option>
+                    <option value="artistic">Artistic - Creative, expressive artwork</option>
+                    <option value="minimalist">Minimalist - Simple, clean designs</option>
+                    <option value="colorful">Colorful - Vibrant, eye-catching images</option>
+                    <option value="vintage">Vintage - Classic, retro-style imagery</option>
+                    <option value="modern">Modern - Contemporary, sleek designs</option>
+                </select>
+            </div>
+
+            <div class="checkbox-container" onclick="toggleContentImages()">
+                <input type="checkbox" id="includeImages">
+                <div>
+                    <div class="checkbox-label">Include Content Images</div>
+                    <small>Add relevant images throughout the book chapters</small>
+                </div>
+            </div>
+
+            <div id="imageOptions" class="image-options disabled">
+                <div class="three-column">
+                    <div class="form-group">
+                        <label for="imageCount">Number of Images</label>
+                        <select id="imageCount">
+                            <option value="3">3 Images</option>
+                            <option value="5">5 Images</option>
+                            <option value="7">7 Images</option>
+                            <option value="10">10 Images</option>
+                            <option value="15">15 Images</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageStyle">Image Style</label>
+                        <select id="imageStyle">
+                            <option value="professional">Professional</option>
+                            <option value="artistic">Artistic</option>
+                            <option value="minimalist">Minimalist</option>
+                            <option value="colorful">Colorful</option>
+                            <option value="vintage">Vintage</option>
+                            <option value="modern">Modern</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageSource">Image Source</label>
+                        <select id="imageSource">
+                            <option value="generate">AI Generated (DALL-E 3)</option>
+                            <option value="unsplash">Unsplash Stock Photos</option>
+                            <option value="both">Both (AI first, fallback to Unsplash)</option>
+                        </select>
+                    </div>
+                </div>
+                <small>💡 <strong>Tip:</strong> AI Generated images are custom-made for your content but cost more. Unsplash provides high-quality copyright-free photos at no extra cost.</small>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="btn" onclick="generateBook()" id="generateBtn">
+                🚀 Generate Professional AI Book with Images
+            </button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <h3 style="margin-bottom: 20px; color: #2d3748;">📖 Generating Your Book...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Initializing AI book generation...</div>
+            <div class="status-messages" id="statusMessages"></div>
+        </div>
+
+        <div id="bookStats" class="book-stats" style="display: none;"></div>
+
+        <div id="coverImageSection" class="cover-image-section" style="display: none;">
+            <h3 style="margin-bottom: 20px; color: #2d3748;">📖 Book Cover</h3>
+            <img id="coverImageDisplay" class="cover-image" alt="Generated book cover">
+            <p id="coverImageCaption" style="color: #666; margin-top: 15px;"></p>
+        </div>
+
+        <div id="contentImagesSection" style="display: none;">
+            <div class="form-section">
+                <h3 style="margin-bottom: 20px; color: #2d3748;">🖼️ Content Images</h3>
+                <div id="imageGallery" class="image-gallery"></div>
+            </div>
+        </div>
+
+        <div id="chaptersPreview"></div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn btn-secondary" id="downloadBtn" onclick="downloadPDF()" style="display: none;">
+                📥 Download Professional PDF Book with Images
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let bookData = {
+            title: '',
+            description: '',
+            author: '',
+            category: '',
+            chapters: [],
+            coverImage: null,
+            contentImages: [],
+            generatedAt: new Date(),
+            totalWords: 0,
+            estimatedPages: 0
+        };
+
+        let isBackendConnected = false;
+        let backendUrl = 'http://localhost:8000';
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            backendUrl = document.getElementById('backendUrl').value;
+            testConnection();
+        });
+
+        function toggleCoverImage() {
+            const checkbox = document.getElementById('generateCover');
+            checkbox.checked = !checkbox.checked;
+        }
+
+        function toggleContentImages() {
+            const checkbox = document.getElementById('includeImages');
+            const options = document.getElementById('imageOptions');
+            
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                options.classList.remove('disabled');
+            } else {
+                options.classList.add('disabled');
+            }
+        }
+
+        async function testConnection() {
+            const urlInput = document.getElementById('backendUrl');
+            backendUrl = urlInput.value.trim();
+            
+            if (!backendUrl) {
+                showConnectionStatus(false, 'Please enter a backend URL');
+                return;
+            }
+
+            try {
+                showConnectionStatus(false, 'Testing connection...', 'testing');
+                
+                const response = await fetch(`${backendUrl}/api/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showConnectionStatus(true, `Connected successfully! ${data.message || ''}`);
+                    isBackendConnected = true;
+                    
+                    // Check available providers
+                    await checkProviders();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                showConnectionStatus(false, `Connection failed: ${error.message}`);
+                isBackendConnected = false;
+            }
+        }
+
+        async function checkProviders() {
+            try {
+                const response = await fetch(`${backendUrl}/api/providers`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateProviderOptions(data.providers);
+                }
+            } catch (error) {
+                console.log('Could not check providers:', error);
+            }
+        }
+
+        function updateProviderOptions(providers) {
+            const select = document.getElementById('aiProvider');
+            select.innerHTML = '';
+            
+            providers.forEach(provider => {
+                const option = document.createElement('option');
+                option.value = provider.name;
+                
+                let features = provider.features ? ` (${provider.features.join(', ')})` : '';
+                option.textContent = `${provider.display_name} ${provider.available ? '✅' : '❌'}${features}`;
+                option.disabled = !provider.available;
+                select.appendChild(option);
+            });
+            
+            // Add both option if multiple providers available
+            const availableProviders = providers.filter(p => p.available);
+            if (availableProviders.length > 1) {
+                const bothOption = document.createElement('option');
+                bothOption.value = 'both';
+                bothOption.textContent = 'Both (Fallback System) ✅';
+                select.appendChild(bothOption);
+            }
+        }
+
+        function showConnectionStatus(connected, message, status = null) {
+            const statusBanner = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            statusBanner.style.display = 'flex';
+            statusText.textContent = message;
+            
+            if (status === 'testing') {
+                statusBanner.className = 'status-banner';
+                statusBanner.style.background = '#fff3cd';
+                statusBanner.style.borderColor = '#ffeaa7';
+            } else if (connected) {
+                statusBanner.className = 'status-banner success';
+            } else {
+                statusBanner.className = 'status-banner error';
+            }
+        }
+
+        async function generateBook() {
+            // Validate inputs
+            const title = document.getElementById('bookTitle').value.trim();
+            const description = document.getElementById('bookDescription').value.trim();
+            const author = document.getElementById('authorName').value.trim() || 'Anonymous Author';
+            const category = document.getElementById('bookCategory').value;
+            const chapterCount = parseInt(document.getElementById('chapterCount').value);
+            const writingStyle = document.getElementById('writingStyle').value;
+            const additionalInstructions = document.getElementById('additionalInstructions').value.trim();
+            const aiProvider = document.getElementById('aiProvider').value;
+            
+            // Image options
+            const generateCover = document.getElementById('generateCover').checked;
+            const coverStyle = document.getElementById('coverStyle').value;
+            const includeImages = document.getElementById('includeImages').checked;
+            const imageCount = parseInt(document.getElementById('imageCount').value);
+            const imageStyle = document.getElementById('imageStyle').value;
+            const imageSource = document.getElementById('imageSource').value;
+
+            if (!title || !description) {
+                alert('Please fill in both title and description fields.');
+                return;
+            }
+
+            if (!isBackendConnected) {
+                alert('Please ensure your backend is connected before generating a book.');
+                return;
+            }
+
+            // Initialize book data
+            bookData = {
+                title,
+                description,
+                author,
+                category,
+                chapters: [],
+                coverImage: null,
+                contentImages: [],
+                generatedAt: new Date(),
+                totalWords: 0,
+                estimatedPages: 0
+            };
+
+            // Show progress section
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('chaptersPreview').innerHTML = '';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('bookStats').style.display = 'none';
+            document.getElementById('coverImageSection').style.display = 'none';
+            document.getElementById('contentImagesSection').style.display = 'none';
+            document.getElementById('statusMessages').innerHTML = '';
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                // Step 1: Generate book outline
+                updateProgress(5, 'Creating comprehensive book outline...');
+                addStatusMessage('🎯 Analyzing your book requirements...', 'info');
+                
+                const outlinePrompt = createOutlinePrompt(title, description, category, chapterCount, writingStyle, additionalInstructions);
+                const outlineResponse = await callAI(outlinePrompt, aiProvider);
+                
+                const chapterTitles = parseChapterTitles(outlineResponse);
+                addStatusMessage(`✅ Generated ${chapterTitles.length} chapter outline`, 'success');
+
+                // Step 2: Generate each chapter
+                for (let i = 0; i < chapterTitles.length; i++) {
+                    const chapterTitle = chapterTitles[i];
+                    const progress = 10 + ((i + 1) / chapterTitles.length) * 70;
+                    
+                    updateProgress(progress, `Generating Chapter ${i + 1}: ${chapterTitle}`);
+                    addStatusMessage(`📝 Working on Chapter ${i + 1}...`, 'info');
+                    
+                    const chapterPrompt = createChapterPrompt(chapterTitle, i + 1, chapterTitles, bookData, writingStyle, additionalInstructions, includeImages);
+                    
+                    const chapterContent = await callAI(chapterPrompt, aiProvider, includeImages ? imageCount : 0, imageStyle, imageSource);
+                    
+                    const wordCount = chapterContent.split(' ').length;
+                    bookData.totalWords += wordCount;
+                    
+                    bookData.chapters.push({
+                        number: i + 1,
+                        title: chapterTitle,
+                        content: chapterContent,
+                        wordCount: wordCount
+                    });
+
+                    // Show chapter preview
+                    displayChapterPreview(i + 1, chapterTitle, chapterContent, wordCount);
+                    addStatusMessage(`✅ Chapter ${i + 1} completed (${wordCount} words)`, 'success');
+                    
+                    // Small delay to prevent overwhelming the UI
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // Step 3: Generate cover image if requested
+                if (generateCover) {
+                    updateProgress(85, '🎨 Creating cover image...');
+                    addStatusMessage('🖼️ Generating book cover...', 'info');
+                    
+                    try {
+                        const coverImageData = await generateCoverImage(title, description, coverStyle, aiProvider);
+                        if (coverImageData) {
+                            bookData.coverImage = coverImageData;
+                            displayCoverImage(coverImageData);
+                            addStatusMessage('✅ Cover image generated successfully', 'success');
+                        }
+                    } catch (error) {
+                        addStatusMessage(`⚠️ Cover image generation failed: ${error.message}`, 'error');
+                    }
+                }
+
+                // Step 4: Generate content images if requested
+                if (includeImages) {
+                    updateProgress(90, '🖼️ Creating content images...');
+                    addStatusMessage('📸 Generating content images...', 'info');
+                    
+                    try {
+                        const contentImagesData = await generateContentImages(bookData.chapters, imageCount, imageStyle, imageSource, aiProvider);
+                        if (contentImagesData && contentImagesData.length > 0) {
+                            bookData.contentImages = contentImagesData;
+                            displayContentImages(contentImagesData);
+                            addStatusMessage(`✅ Generated ${contentImagesData.length} content images`, 'success');
+                        }
+                    } catch (error) {
+                        addStatusMessage(`⚠️ Content image generation failed: ${error.message}`, 'error');
+                    }
+                }
+
+                // Calculate final statistics
+                bookData.estimatedPages = Math.ceil(bookData.totalWords / 250);
+
+                updateProgress(100, '🎉 Book generation completed successfully!');
+                addStatusMessage(`🎊 Book generation completed!`, 'success');
+                addStatusMessage(`📊 Total: ${bookData.totalWords} words across ${bookData.chapters.length} chapters`, 'success');
+                addStatusMessage(`📄 Estimated pages: ${bookData.estimatedPages} (at ~250 words per page)`, 'success');
+                
+                if (bookData.coverImage) {
+                    addStatusMessage(`🎨 Cover image: ${bookData.coverImage.style} style`, 'success');
+                }
+                
+                if (bookData.contentImages.length > 0) {
+                    addStatusMessage(`🖼️ Content images: ${bookData.contentImages.length} images included`, 'success');
+                }
+                
+                showBookStats();
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+
+            } catch (error) {
+                updateProgress(0, '❌ Error generating book');
+                addStatusMessage(`Error: ${error.message}`, 'error');
+                console.error('Generation error:', error);
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        async function callAI(prompt, provider, imageCount = 0, imageStyle = 'professional', imageSource = 'generate') {
+            const requestBody = {
+                prompt: prompt,
+                provider: provider,
+                max_tokens: 4000,
+                temperature: 0.7,
+                generate_cover: false, // Cover is handled separately
+                image_config: imageCount > 0 ? {
+                    include_images: true,
+                    image_count: imageCount,
+                    image_style: imageStyle,
+                    image_source: imageSource
+                } : null
+            };
+
+            const response = await fetch(`${backendUrl}/api/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `API call failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.content;
+        }
+
+        async function generateCoverImage(title, description, style, provider) {
+            const requestBody = {
+                prompt: `${title}: ${description.substring(0, 200)}`,
+                provider: provider,
+                generate_cover: true,
+                cover_style: style,
+                max_tokens: 1000,
+                temperature: 0.7
+            };
+
+            const response = await fetch(`${backendUrl}/api/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Cover image generation failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.cover_image;
+        }
+
+        async function generateContentImages(chapters, imageCount, imageStyle, imageSource, provider) {
+            const allContent = chapters.map(ch => ch.content).join('\n\n');
+            
+            const requestBody = {
+                prompt: `Generate images for book content: ${allContent.substring(0, 1000)}`,
+                provider: provider,
+                generate_cover: false,
+                max_tokens: 1000,
+                temperature: 0.7,
+                image_config: {
+                    include_images: true,
+                    image_count: imageCount,
+                    image_style: imageStyle,
+                    image_source: imageSource
+                }
+            };
+
+            const response = await fetch(`${backendUrl}/api/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Content image generation failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.images || [];
+        }
+
+        function displayCoverImage(coverImageData) {
+            const section = document.getElementById('coverImageSection');
+            const img = document.getElementById('coverImageDisplay');
+            const caption = document.getElementById('coverImageCaption');
+            
+            img.src = coverImageData.url;
+            caption.textContent = `Style: ${coverImageData.style} | Generated with: ${coverImageData.prompt_used.substring(0, 100)}...`;
+            
+            section.style.display = 'block';
+        }
+
+        function displayContentImages(imagesData) {
+            const section = document.getElementById('contentImagesSection');
+            const gallery = document.getElementById('imageGallery');
+            
+            gallery.innerHTML = '';
+            
+            imagesData.forEach((imageData, index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'content-image';
+                
+                imageDiv.innerHTML = `
+                    <img src="${imageData.url}" alt="${imageData.alt_text}" loading="lazy">
+                    <div class="caption">
+                        <strong>Image ${index + 1}:</strong> ${imageData.caption}
+                        <div class="source-badge">${imageData.source}</div>
+                    </div>
+                `;
+                
+                gallery.appendChild(imageDiv);
+            });
+            
+            section.style.display = 'block';
+        }
+
+        function createOutlinePrompt(title, description, category, chapterCount, writingStyle, additionalInstructions) {
+            return `Create a detailed book outline for a ${category} book titled "${title}".
+
+Book Requirements:
+- Title: ${title}
+- Description: ${description}
+- Number of Chapters: ${chapterCount}
+- Writing Style: ${writingStyle}
+- Category: ${category}
+${additionalInstructions ? `- Additional Instructions: ${additionalInstructions}` : ''}
+
+Please generate exactly ${chapterCount} chapter titles that are:
+1. Specific and descriptive (not generic)
+2. Logically ordered and progressive
+3. Comprehensive for the topic
+4. Suitable for ${writingStyle} writing style
+5. Appropriate for the ${category} category
+6. Engaging and compelling for readers
+
+Each chapter should build upon the previous one and contribute to the overall book's value proposition.
+
+Format: Return only the chapter titles, one per line, numbered (1., 2., etc.).`;
+        }
+
+        function createChapterPrompt(chapterTitle, chapterNumber, allChapters, bookInfo, writingStyle, additionalInstructions, includeImages) {
+            const previousChapter = chapterNumber > 1 ? allChapters[chapterNumber - 2] : null;
+            const nextChapter = chapterNumber < allChapters.length ? allChapters[chapterNumber] : null;
+
+            let imageInstruction = '';
+            if (includeImages) {
+                imageInstruction = `
+
+IMPORTANT: Include 2-3 strategic image placement suggestions in your content using this format:
+[IMAGE: Brief description of what image should show]
+
+Place these markers where images would enhance understanding or engagement.`;
+            }
+
+            return `Write a comprehensive and valuable chapter for the book "${bookInfo.title}".
+
+CHAPTER DETAILS:
+Chapter ${chapterNumber}: ${chapterTitle}
+
+BOOK CONTEXT:
+- Overall Description: ${bookInfo.description}
+- Category: ${bookInfo.category}
+- Writing Style: ${writingStyle}
+- Total Chapters: ${allChapters.length}
+${previousChapter ? `- Previous Chapter: ${previousChapter}` : ''}
+${nextChapter ? `- Next Chapter: ${nextChapter}` : ''}
+${additionalInstructions ? `- Special Instructions: ${additionalInstructions}` : ''}
+
+CHAPTER REQUIREMENTS:
+1. Target Length: 2000-3000 words (substantial content)
+2. Start with an engaging introduction that hooks the reader
+3. Include 5-7 main sections with clear subheadings
+4. Provide practical examples, case studies, or real-world applications
+5. Include actionable advice and specific steps where applicable
+6. Use the ${writingStyle} tone consistently throughout
+7. End with a strong summary and smooth transition to the next chapter
+8. Make it informative, valuable, and engaging for readers
+9. Include relevant statistics, facts, or expert insights where appropriate
+10. Ensure content is original and provides real value${imageInstruction}
+
+STRUCTURE GUIDELINES:
+- Use clear headings and subheadings (##, ###)
+- Break up text with bullet points or numbered lists where helpful
+- Include examples, analogies, or stories to illustrate points
+- Provide practical takeaways and action items
+- Make it scannable and easy to read
+
+Write a complete, detailed chapter that readers would find genuinely valuable and worth purchasing. Focus on depth, clarity, practical usefulness, and engaging presentation.`;
+        }
+
+        function parseChapterTitles(outlineText) {
+            const lines = outlineText.split('\n').filter(line => line.trim());
+            return lines.map(line => {
+                // Remove numbering, bullets, and clean up
+                return line.replace(/^\d+\.?\s*/, '')
+                          .replace(/^[•\-\*]\s*/, '')
+                          .replace(/^Chapter\s+\d+:?\s*/i, '')
+                          .trim();
+            }).filter(title => title.length > 0 && title.length < 200);
+        }
+
+        function updateProgress(percentage, text) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').innerHTML = `<div class="loading-spinner"></div>${text}`;
+        }
+
+        function addStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `status-message ${type}`;
+            messageDiv.innerHTML = `<small>${new Date().toLocaleTimeString()}</small><br>${message}`;
+            statusDiv.appendChild(messageDiv);
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        function displayChapterPreview(number, title, content, wordCount) {
+            const preview = document.createElement('div');
+            preview.className = 'chapter-preview';
+            
+            const previewContent = content.substring(0, 1000) + (content.length > 1000 ? '...' : '');
+            
+            preview.innerHTML = `
+                <div class="chapter-title">
+                    <span>Chapter ${number}: ${title}</span>
+                    <div>
+                        <span class="ai-badge">AI Generated</span>
+                        <span class="word-badge">${wordCount} words</span>
+                    </div>
+                </div>
+                <div class="chapter-content">${previewContent.replace(/\n/g, '<br>')}</div>
+            `;
+            
+            document.getElementById('chaptersPreview').appendChild(preview);
+        }
+
+        function showBookStats() {
+            const statsDiv = document.getElementById('bookStats');
+            const avgWordsPerChapter = Math.round(bookData.totalWords / bookData.chapters.length);
+            const estimatedReadingTime = Math.round(bookData.totalWords / 200); // 200 words per minute
+            
+            let statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${bookData.totalWords.toLocaleString()}</div>
+                    <div class="stat-label">Total Words</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${bookData.chapters.length}</div>
+                    <div class="stat-label">Chapters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${bookData.estimatedPages}</div>
+                    <div class="stat-label">Est. Pages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${avgWordsPerChapter}</div>
+                    <div class="stat-label">Avg Words/Chapter</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${estimatedReadingTime}min</div>
+                    <div class="stat-label">Reading Time</div>
+                </div>
+            `;
+            
+            if (bookData.coverImage) {
+                statsHTML += `
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Cover Image</div>
+                    </div>
+                `;
+            }
+            
+            if (bookData.contentImages.length > 0) {
+                statsHTML += `
+                    <div class="stat-card">
+                        <div class="stat-number">${bookData.contentImages.length}</div>
+                        <div class="stat-label">Content Images</div>
+                    </div>
+                `;
+            }
+            
+            statsDiv.innerHTML = statsHTML;
+            statsDiv.style.display = 'grid';
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let yPosition = 20;
+            const margin = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const lineHeight = 6;
+            const maxWidth = pageWidth - (margin * 2);
+
+            // Enhanced Title page
+            doc.setFontSize(32);
+            doc.setFont(undefined, 'bold');
+            
+            const titleLines = doc.splitTextToSize(bookData.title, maxWidth);
+            titleLines.forEach(line => {
+                const textWidth = doc.getTextWidth(line);
+                const xPosition = (pageWidth - textWidth) / 2;
+                doc.text(line, xPosition, yPosition);
+                yPosition += 18;
+            });
+
+            yPosition += 30;
+
+            // Author
+            doc.setFontSize(20);
+            doc.setFont(undefined, 'normal');
+            const authorText = `by ${bookData.author}`;
+            const authorWidth = doc.getTextWidth(authorText);
+            const authorX = (pageWidth - authorWidth) / 2;
+            doc.text(authorText, authorX, yPosition);
+
+            yPosition += 40;
+
+            // Book statistics
+            doc.setFontSize(12);
+            const statsLines = [
+                `${bookData.totalWords.toLocaleString()} words • ${bookData.estimatedPages} pages • ${bookData.chapters.length} chapters`,
+                `Generated on ${bookData.generatedAt.toLocaleDateString()}`,
+                `Category: ${bookData.category}`
+            ];
+            
+            if (bookData.coverImage) {
+                statsLines.push(`Cover Image: ${bookData.coverImage.style} style`);
+            }
+            
+            if (bookData.contentImages.length > 0) {
+                statsLines.push(`${bookData.contentImages.length} content images included`);
+            }
+            
+            statsLines.forEach(line => {
+                const lineWidth = doc.getTextWidth(line);
+                const lineX = (pageWidth - lineWidth) / 2;
+                doc.text(line, lineX, yPosition);
+                yPosition += 10;
+            });
+
+            yPosition += 30;
+
+            // Description
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            const descLines = doc.splitTextToSize(bookData.description, maxWidth);
+            descLines.forEach(line => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += lineHeight;
+            });
+
+            // Table of Contents
+            doc.addPage();
+            yPosition = 20;
+            
+            doc.setFontSize(24);
+            doc.setFont(undefined, 'bold');
+            doc.text('Table of Contents', margin, yPosition);
+            yPosition += 30;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            
+            bookData.chapters.forEach((chapter, index) => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                const chapterLine = `Chapter ${chapter.number}: ${chapter.title}`;
+                const chapterLines = doc.splitTextToSize(chapterLine, maxWidth - 60);
+                
+                chapterLines.forEach((line, lineIndex) => {
+                    doc.text(line, margin, yPosition);
+                    if (lineIndex === chapterLines.length - 1) {
+                        doc.text(`${chapter.wordCount} words`, pageWidth - 60, yPosition);
+                    }
+                    yPosition += lineHeight + 2;
+                });
+                yPosition += 3;
+            });
+
+            // Chapters with image placeholders
+            bookData.chapters.forEach(chapter => {
+                doc.addPage();
+                yPosition = 20;
+
+                // Chapter header
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text(`Chapter ${chapter.number}`, margin, yPosition);
+                yPosition += 20;
+                
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                const chapterTitleLines = doc.splitTextToSize(chapter.title, maxWidth);
+                chapterTitleLines.forEach(line => {
+                    if (yPosition > 270) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    doc.text(line, margin, yPosition);
+                    yPosition += 12;
+                });
+                
+                yPosition += 15;
+
+                // Chapter content with image placeholders
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                
+                const contentSections = chapter.content.split(/\[IMAGE:[^\]]+\]/);
+                const imageMarkers = chapter.content.match(/\[IMAGE:[^\]]+\]/g) || [];
+                
+                contentSections.forEach((section, sectionIndex) => {
+                    // Add content section
+                    const contentLines = doc.splitTextToSize(section.trim(), maxWidth);
+                    contentLines.forEach(line => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        doc.text(line, margin, yPosition);
+                        yPosition += lineHeight;
+                    });
+                    
+                    // Add image placeholder if there's a corresponding marker
+                    if (sectionIndex < imageMarkers.length) {
+                        yPosition += 10;
+                        
+                        if (yPosition > 240) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        
+                        // Draw image placeholder
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(margin, yPosition, maxWidth, 60, 'FD');
+                        
+                        doc.setFontSize(8);
+                        doc.setTextColor(100, 100, 100);
+                        const imageText = imageMarkers[sectionIndex].replace(/\[IMAGE:\s*/, '').replace(/\]/, '');
+                        const imageLines = doc.splitTextToSize(`[IMAGE PLACEHOLDER: ${imageText}]`, maxWidth - 20);
+                        
+                        let imgTextY = yPosition + 30;
+                        imageLines.forEach(line => {
+                            const lineWidth = doc.getTextWidth(line);
+                            const lineX = margin + (maxWidth - lineWidth) / 2;
+                            doc.text(line, lineX, imgTextY);
+                            imgTextY += 8;
+                        });
+                        
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFontSize(10);
+                        yPosition += 70;
+                    }
+                    
+                    yPosition += 10;
+                });
+            });
+
+            // Footer on each page
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Page ${i} of ${totalPages}`, pageWidth - 50, doc.internal.pageSize.height - 10);
+                doc.text(`© ${new Date().getFullYear()} ${bookData.author}`, margin, doc.internal.pageSize.height - 10);
+            }
+
+            // Generate filename
+            const cleanTitle = bookData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const imagesSuffix = bookData.contentImages.length > 0 ? `_${bookData.contentImages.length}images` : '';
+            const coverSuffix = bookData.coverImage ? '_withcover' : '';
+            const fileName = `${cleanTitle}_${bookData.totalWords}words_${bookData.chapters.length}chapters${imagesSuffix}${coverSuffix}.pdf`;
+            
+            doc.save(fileName);
+            
+            // Show success message
+            addStatusMessage(`📥 PDF downloaded: ${fileName}`, 'success');
+        }
+    </script>
+</body>
+</html>
